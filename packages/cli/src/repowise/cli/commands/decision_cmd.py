@@ -39,6 +39,7 @@ from repowise.core.analysis.decisions.lifecycle import (
     AGREEMENT_KIND,
     ARCHITECTURAL_KIND,
     DECISION_KINDS,
+    NO_ACCEPTANCE_IDENTITY_BLOCKER,
     NO_DECISION_BLOCKER,
     NO_EVIDENCE_BLOCKER,
     NO_RATIONALE_BLOCKER,
@@ -864,6 +865,26 @@ def _decision_body_lines(rec) -> list[str]:
 _ACCEPT_REMEDY = "Supply the missing parts with --decision, --reason, --scope or --evidence."
 
 
+def _accept_remedy_for_blockers(blockers: list[str]) -> str:
+    """Return only the remedies that address the blockers in this refusal."""
+    remedies = []
+    if any(AGENT_ACCEPTANCE_DISABLED_BLOCKER in blocker for blocker in blockers):
+        remedies.append(AGENT_ACCEPTANCE_REMEDY)
+    if any(
+        blocker
+        in {
+            NO_ACCEPTANCE_IDENTITY_BLOCKER,
+            NO_DECISION_BLOCKER,
+            NO_RATIONALE_BLOCKER,
+            NO_SCOPE_BLOCKER,
+            NO_EVIDENCE_BLOCKER,
+        }
+        for blocker in blockers
+    ):
+        remedies.append(_ACCEPT_REMEDY)
+    return " ".join(remedies)
+
+
 @decision_group.command("confirm")
 @click.argument("decision_ids", nargs=-1)
 @click.option(
@@ -951,23 +972,7 @@ def decision_confirm(
         for result in results
         for blocker in result.get("blockers", [])
     ]
-    remedies = []
-    if any(
-        AGENT_ACCEPTANCE_DISABLED_BLOCKER in blocker for blocker in blockers
-    ):
-        remedies.append(AGENT_ACCEPTANCE_REMEDY)
-    if any(
-        blocker
-        in {
-            NO_DECISION_BLOCKER,
-            NO_RATIONALE_BLOCKER,
-            NO_SCOPE_BLOCKER,
-            NO_EVIDENCE_BLOCKER,
-        }
-        for blocker in blockers
-    ):
-        remedies.append(_ACCEPT_REMEDY)
-    remedy = " ".join(remedies)
+    remedy = _accept_remedy_for_blockers(blockers)
     if len(ids) > 1 or preview or fmt == "json":
         _emit_batch(results, "accepted", "accept", preview, fmt, remedy)
         return
