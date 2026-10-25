@@ -15,7 +15,9 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
+from repowise.cli.commands.decision_cmd import _accept_remedy_for_blockers
 from repowise.cli.main import cli
+from repowise.core.analysis.decisions.lifecycle import NO_ACCEPTANCE_IDENTITY_BLOCKER
 
 from .test_decision_cmd import _seed_wiki_db
 
@@ -44,6 +46,12 @@ def _run(repo: Path, *args: str):
 def _forbid_agents(repo: Path) -> None:
     result = _run(repo, "config", "agent-acceptance", "--off")
     assert result.exit_code == 0, result.output
+
+
+def test_a_missing_acceptance_identity_keeps_the_record_remedy() -> None:
+    remedy = _accept_remedy_for_blockers([NO_ACCEPTANCE_IDENTITY_BLOCKER])
+
+    assert remedy.startswith("Supply the missing parts")
 
 
 def test_an_agent_accepts_with_no_config(repo: Path) -> None:
