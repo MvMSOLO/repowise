@@ -863,6 +863,7 @@ def _decision_body_lines(rec) -> list[str]:
 #: The remedy printed beside a refused acceptance, naming the flags that
 #: supply what the contract found missing.
 _ACCEPT_REMEDY = "Supply the missing parts with --decision, --reason, --scope or --evidence."
+_ACCEPT_IDENTITY_REMEDY = "Name the signer with --as <name> or --agent <slug>."
 
 
 def _accept_remedy_for_blockers(blockers: list[str]) -> str:
@@ -870,10 +871,11 @@ def _accept_remedy_for_blockers(blockers: list[str]) -> str:
     remedies = []
     if any(AGENT_ACCEPTANCE_DISABLED_BLOCKER in blocker for blocker in blockers):
         remedies.append(AGENT_ACCEPTANCE_REMEDY)
+    if NO_ACCEPTANCE_IDENTITY_BLOCKER in blockers:
+        remedies.append(_ACCEPT_IDENTITY_REMEDY)
     if any(
         blocker
         in {
-            NO_ACCEPTANCE_IDENTITY_BLOCKER,
             NO_DECISION_BLOCKER,
             NO_RATIONALE_BLOCKER,
             NO_SCOPE_BLOCKER,
