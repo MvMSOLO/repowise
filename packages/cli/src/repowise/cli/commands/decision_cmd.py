@@ -34,10 +34,15 @@ from repowise.cli.helpers import (
 from repowise.cli.output import emit_json, emit_refusal, format_option, notice_console
 from repowise.cli.worktree import detect_worktree_base
 from repowise.core.analysis.decisions.lifecycle import (
+    AGENT_ACCEPTANCE_DISABLED_BLOCKER,
     AGENT_ACCEPTANCE_REMEDY,
     AGREEMENT_KIND,
     ARCHITECTURAL_KIND,
     DECISION_KINDS,
+    NO_DECISION_BLOCKER,
+    NO_EVIDENCE_BLOCKER,
+    NO_RATIONALE_BLOCKER,
+    NO_SCOPE_BLOCKER,
 )
 from repowise.core.analysis.decisions.provenance import LISTABLE_SOURCES
 from repowise.core.precedent.currency import describe_decision_currency
@@ -948,13 +953,17 @@ def decision_confirm(
     ]
     remedies = []
     if any(
-        "agent acceptance is off for this repository" in blocker for blocker in blockers
+        AGENT_ACCEPTANCE_DISABLED_BLOCKER in blocker for blocker in blockers
     ):
         remedies.append(AGENT_ACCEPTANCE_REMEDY)
     if any(
-        blocker.startswith(
-            ("no decision text:", "no rationale", "no scope:", "no evidence reference")
-        )
+        blocker
+        in {
+            NO_DECISION_BLOCKER,
+            NO_RATIONALE_BLOCKER,
+            NO_SCOPE_BLOCKER,
+            NO_EVIDENCE_BLOCKER,
+        }
         for blocker in blockers
     ):
         remedies.append(_ACCEPT_REMEDY)
