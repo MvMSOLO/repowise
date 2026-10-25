@@ -20,6 +20,7 @@ __all__ = [
     "ACCEPTANCE_ACTIONS",
     "ACCEPTER_KINDS",
     "ACCEPTER_SESSION_MAX",
+    "AGENT_ACCEPTANCE_DISABLED_BLOCKER",
     "AGENT_ACCEPTANCE_REMEDY",
     "AGREEMENT_KIND",
     "AGREEMENT_SCOPE",
@@ -32,6 +33,8 @@ __all__ = [
     "HISTORY_CURRENCIES",
     "NEEDS_REVIEW_STALENESS",
     "NO_DECISION_BLOCKER",
+    "NO_EVIDENCE_BLOCKER",
+    "NO_RATIONALE_BLOCKER",
     "REVIEW_LANES",
     "SPLIT_MARKERS",
     "STORED_CURRENCIES",
@@ -206,6 +209,12 @@ AGENT_ACCEPTANCE_REMEDY = (
     "turn agent acceptance back on with `repowise decision config agent-acceptance --on`."
 )
 
+#: Stable blocker phrases shared with the CLI so remedy selection does not depend
+#: on duplicating human-readable messages in another module.
+AGENT_ACCEPTANCE_DISABLED_BLOCKER = "agent acceptance is off for this repository"
+NO_RATIONALE_BLOCKER = "no rationale or explicit constraint reason"
+NO_EVIDENCE_BLOCKER = "no evidence reference"
+
 
 def accepter_kind_blocker(kind: str) -> str | None:
     """Why *kind* cannot be stamped on a new acceptance, or ``None``."""
@@ -227,7 +236,7 @@ def machine_grant_blocker(kind: str, action: str, *, granted: bool) -> str | Non
     if kind != "agent" or action not in GRANTING_ACTIONS or granted:
         return None
     verb = _GRANTING_ACTION_VERBS[action]
-    return f"an agent may not {verb} here: agent acceptance is off for this repository"
+    return f"an agent may not {verb} here: {AGENT_ACCEPTANCE_DISABLED_BLOCKER}"
 
 
 #: The fraction of a decision's files that must have moved before the decision
@@ -350,11 +359,11 @@ def acceptance_blockers(req: AcceptanceRequirement) -> list[str]:
     if req.decision is not None and not req.decision.strip():
         blockers.append(NO_DECISION_BLOCKER)
     if not req.reason.strip():
-        blockers.append("no rationale or explicit constraint reason")
+        blockers.append(NO_RATIONALE_BLOCKER)
     if not [s for s in req.scope if s and s.strip()]:
         blockers.append(NO_SCOPE_BLOCKER)
     if not req.self_authored and not [e for e in req.evidence if e and e.strip()]:
-        blockers.append("no evidence reference")
+        blockers.append(NO_EVIDENCE_BLOCKER)
     if not req.accepter.strip() and not req.artifact.strip():
         blockers.append("no accepter or tracked-artifact identity")
     return blockers
