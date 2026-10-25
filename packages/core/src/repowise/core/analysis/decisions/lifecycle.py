@@ -32,6 +32,7 @@ __all__ = [
     "GRANTING_ACTIONS",
     "HISTORY_CURRENCIES",
     "NEEDS_REVIEW_STALENESS",
+    "NO_ACCEPTANCE_IDENTITY_BLOCKER",
     "NO_DECISION_BLOCKER",
     "NO_EVIDENCE_BLOCKER",
     "NO_RATIONALE_BLOCKER",
@@ -343,6 +344,7 @@ class AcceptanceRequirement:
 NO_SCOPE_BLOCKER = "no scope: name the files or modules it governs"
 
 NO_DECISION_BLOCKER = "no decision text: state what was chosen"
+NO_ACCEPTANCE_IDENTITY_BLOCKER = "no accepter or tracked-artifact identity"
 
 
 def acceptance_blockers(req: AcceptanceRequirement) -> list[str]:
@@ -365,7 +367,7 @@ def acceptance_blockers(req: AcceptanceRequirement) -> list[str]:
     if not req.self_authored and not [e for e in req.evidence if e and e.strip()]:
         blockers.append(NO_EVIDENCE_BLOCKER)
     if not req.accepter.strip() and not req.artifact.strip():
-        blockers.append("no accepter or tracked-artifact identity")
+        blockers.append(NO_ACCEPTANCE_IDENTITY_BLOCKER)
     return blockers
 
 
