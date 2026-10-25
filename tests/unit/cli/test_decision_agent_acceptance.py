@@ -48,10 +48,12 @@ def _forbid_agents(repo: Path) -> None:
     assert result.exit_code == 0, result.output
 
 
-def test_a_missing_acceptance_identity_keeps_the_record_remedy() -> None:
+def test_a_missing_acceptance_identity_explains_how_to_name_the_signer() -> None:
     remedy = _accept_remedy_for_blockers([NO_ACCEPTANCE_IDENTITY_BLOCKER])
 
-    assert remedy.startswith("Supply the missing parts")
+    assert "--as <name>" in remedy
+    assert "--agent <slug>" in remedy
+    assert "Supply the missing parts" not in remedy
 
 
 def test_an_agent_accepts_with_no_config(repo: Path) -> None:
