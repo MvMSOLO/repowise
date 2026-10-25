@@ -941,11 +941,24 @@ def decision_confirm(
             repo_path, ids, action="accepted", verb="accept", preview=preview, apply_one=_accept
         )
     )
-    # Both, not either: one run can refuse one id for the policy and another
-    # for a missing scope.
-    remedy = _ACCEPT_REMEDY
-    if agent and not granted:
-        remedy = f"{AGENT_ACCEPTANCE_REMEDY} {remedy}"
+    blockers = [
+        blocker
+        for result in results
+        for blocker in result.get("blockers", [])
+    ]
+    remedies = []
+    if any(
+        "agent acceptance is off for this repository" in blocker for blocker in blockers
+    ):
+        remedies.append(AGENT_ACCEPTANCE_REMEDY)
+    if any(
+        blocker.startswith(
+            ("no decision text:", "no rationale", "no scope:", "no evidence reference")
+        )
+        for blocker in blockers
+    ):
+        remedies.append(_ACCEPT_REMEDY)
+    remedy = " ".join(remedies)
     if len(ids) > 1 or preview or fmt == "json":
         _emit_batch(results, "accepted", "accept", preview, fmt, remedy)
         return

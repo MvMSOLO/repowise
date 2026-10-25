@@ -182,6 +182,7 @@ ACCEPTANCE_ACTIONS: tuple[str, ...] = (
 
 #: Actions that create or renew authority, against the ones that withdraw it.
 GRANTING_ACTIONS: frozenset[str] = frozenset({"accepted", "reaffirmed", "merged"})
+_GRANTING_ACTION_VERBS = {"accepted": "accept", "reaffirmed": "reaffirm", "merged": "merge"}
 
 #: Who signed an acceptance. ``person`` is a human, ``agent`` a coding agent
 #: or a pipeline stage, ``import`` a tracked artifact or manifest speaking for
@@ -225,10 +226,8 @@ def machine_grant_blocker(kind: str, action: str, *, granted: bool) -> str | Non
     """
     if kind != "agent" or action not in GRANTING_ACTIONS or granted:
         return None
-    return (
-        f"an agent may not record a {action!r} acceptance here: agent acceptance "
-        "is off for this repository"
-    )
+    verb = _GRANTING_ACTION_VERBS[action]
+    return f"an agent may not {verb} here: agent acceptance is off for this repository"
 
 
 #: The fraction of a decision's files that must have moved before the decision
